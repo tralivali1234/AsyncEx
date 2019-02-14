@@ -11,7 +11,7 @@ Supports `netstandard1.3` (including .NET 4.6, .NET Core 1.0, Xamarin.iOS 10, Xa
 [![AppVeyor](https://img.shields.io/appveyor/ci/StephenCleary/AsyncEx.svg?style=plastic)](https://ci.appveyor.com/project/StephenCleary/AsyncEx) [![Coveralls](https://img.shields.io/coveralls/StephenCleary/AsyncEx.svg?style=plastic)](https://coveralls.io/r/StephenCleary/AsyncEx)
 [![NuGet Pre Release](https://img.shields.io/nuget/vpre/Nito.AsyncEx.svg?style=plastic)](https://www.nuget.org/packages/Nito.AsyncEx/)
 
-[API Docs](http://dotnetapis.com/pkg/Nito.AsyncEx)
+[API Docs](http://dotnetapis.com/pkg/Nito.AsyncEx) - [Overview](doc/Home.md) - [Upgrade Guide](doc/upgrade.md)
 
 ## Getting Started
 
@@ -21,49 +21,55 @@ Install the [NuGet package](http://www.nuget.org/packages/Nito.AsyncEx).
 
 A lot of developers start using this library for `AsyncLock`, an async-compatible mutual exclusion mechanism. Using `AsyncLock` is straightforward:
 
-    private readonly AsyncLock _mutex = new AsyncLock();
-    public async Task UseLockAsync()
-    {
-      // AsyncLock can be locked asynchronously
-      using (await _mutex.LockAsync())
-      {
-        // It's safe to await while the lock is held
-        await Task.Delay(TimeSpan.FromSeconds(1));
-      }
-    }
+```C#
+private readonly AsyncLock _mutex = new AsyncLock();
+public async Task UseLockAsync()
+{
+  // AsyncLock can be locked asynchronously
+  using (await _mutex.LockAsync())
+  {
+    // It's safe to await while the lock is held
+    await Task.Delay(TimeSpan.FromSeconds(1));
+  }
+}
+```
 
 `AsyncLock` also fully supports cancellation:
 
-    public async Task UseLockAsync()
-    {
-      // Attempt to take the lock only for 2 seconds.
-      var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-      
-      // If the lock isn't available after 2 seconds, this will
-      //  raise OperationCanceledException.
-      using (await _mutex.LockAsync(cts.Token))
-      {
-        await Task.Delay(TimeSpan.FromSeconds(1));
-      }
-    }
+```C#
+public async Task UseLockAsync()
+{
+  // Attempt to take the lock only for 2 seconds.
+  var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+  
+  // If the lock isn't available after 2 seconds, this will
+  //  raise OperationCanceledException.
+  using (await _mutex.LockAsync(cts.Token))
+  {
+    await Task.Delay(TimeSpan.FromSeconds(1));
+  }
+}
+```
 
 `AsyncLock` also has a synchronous API. This permits some threads to acquire the lock asynchronously while other threads acquire the lock synchronously (blocking the thread).
 
-    public async Task UseLockAsync()
-    {
-      using (await _mutex.LockAsync())
-      {
-        await Task.Delay(TimeSpan.FromSeconds(1));
-      }
-    }
+```C#
+public async Task UseLockAsync()
+{
+  using (await _mutex.LockAsync())
+  {
+    await Task.Delay(TimeSpan.FromSeconds(1));
+  }
+}
 
-    public void UseLock()
-    {
-      using (_mutex.Lock())
-      {
-        Thread.Sleep(TimeSpan.FromSeconds(1));
-      }
-    }
+public void UseLock()
+{
+  using (_mutex.Lock())
+  {
+    Thread.Sleep(TimeSpan.FromSeconds(1));
+  }
+}
+```
 
 ## Other Coordination Primitives
 

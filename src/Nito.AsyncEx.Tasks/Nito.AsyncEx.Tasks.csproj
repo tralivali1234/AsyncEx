@@ -7,6 +7,7 @@
     <Authors>Stephen Cleary</Authors>
     <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>NU5125</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Nito.AsyncEx.Tasks</AssemblyName>
     <PackageId>Nito.AsyncEx.Tasks</PackageId>
@@ -25,7 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nito.Disposables" Version="1.2.3" />
+    <PackageReference Include="Nito.Disposables" Version="2.0.0" />
   </ItemGroup>
 
 </Project>

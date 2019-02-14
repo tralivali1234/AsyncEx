@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,6 +36,30 @@ namespace Nito.AsyncEx
         }
 
         /// <summary>
+        /// Asynchronously waits for the task to complete, or for the cancellation token to be canceled.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the task result.</typeparam>
+        /// <param name="this">The task to wait for. May not be <c>null</c>.</param>
+        /// <param name="cancellationToken">The cancellation token that cancels the wait.</param>
+        public static Task<TResult> WaitAsync<TResult>(this Task<TResult> @this, CancellationToken cancellationToken)
+        {
+            if (@this == null)
+                throw new ArgumentNullException(nameof(@this));
+
+            if (!cancellationToken.CanBeCanceled)
+                return @this;
+            if (cancellationToken.IsCancellationRequested)
+                return Task.FromCanceled<TResult>(cancellationToken);
+            return DoWaitAsync(@this, cancellationToken);
+        }
+
+        private static async Task<TResult> DoWaitAsync<TResult>(Task<TResult> task, CancellationToken cancellationToken)
+        {
+            using (var cancelTaskSource = new CancellationTokenTaskSource<TResult>(cancellationToken))
+                return await await Task.WhenAny(task, cancelTaskSource.Task).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Asynchronously waits for any of the source tasks to complete, or for the cancellation token to be canceled.
         /// </summary>
         /// <param name="this">The tasks to wait for. May not be <c>null</c>.</param>
@@ -57,42 +82,6 @@ namespace Nito.AsyncEx
                 throw new ArgumentNullException(nameof(@this));
 
             return Task.WhenAny(@this);
-        }
-
-        /// <summary>
-        /// Asynchronously waits for all of the source tasks to complete.
-        /// </summary>
-        /// <param name="this">The tasks to wait for. May not be <c>null</c>.</param>
-        public static Task WhenAll(this IEnumerable<Task> @this)
-        {
-            if (@this == null)
-                throw new ArgumentNullException(nameof(@this));
-
-            return Task.WhenAll(@this);
-        }
-
-        /// <summary>
-        /// Asynchronously waits for the task to complete, or for the cancellation token to be canceled.
-        /// </summary>
-        /// <typeparam name="TResult">The type of the task result.</typeparam>
-        /// <param name="this">The task to wait for. May not be <c>null</c>.</param>
-        /// <param name="cancellationToken">The cancellation token that cancels the wait.</param>
-        public static Task<TResult> WaitAsync<TResult>(this Task<TResult> @this, CancellationToken cancellationToken)
-        {
-            if (@this == null)
-                throw new ArgumentNullException(nameof(@this));
-
-            if (!cancellationToken.CanBeCanceled)
-                return @this;
-            if (cancellationToken.IsCancellationRequested)
-                return Task.FromCanceled<TResult>(cancellationToken);
-            return DoWaitAsync(@this, cancellationToken);
-        }
-
-        private static async Task<TResult> DoWaitAsync<TResult>(Task<TResult> task, CancellationToken cancellationToken)
-        {
-            using (var cancelTaskSource = new CancellationTokenTaskSource<TResult>(cancellationToken))
-                return await await Task.WhenAny(task, cancelTaskSource.Task).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -125,6 +114,18 @@ namespace Nito.AsyncEx
         /// <summary>
         /// Asynchronously waits for all of the source tasks to complete.
         /// </summary>
+        /// <param name="this">The tasks to wait for. May not be <c>null</c>.</param>
+        public static Task WhenAll(this IEnumerable<Task> @this)
+        {
+            if (@this == null)
+                throw new ArgumentNullException(nameof(@this));
+
+            return Task.WhenAll(@this);
+        }
+
+        /// <summary>
+        /// Asynchronously waits for all of the source tasks to complete.
+        /// </summary>
         /// <typeparam name="TResult">The type of the task results.</typeparam>
         /// <param name="this">The tasks to wait for. May not be <c>null</c>.</param>
         public static Task<TResult[]> WhenAll<TResult>(this IEnumerable<Task<TResult>> @this)
@@ -133,6 +134,40 @@ namespace Nito.AsyncEx
                 throw new ArgumentNullException(nameof(@this));
 
             return Task.WhenAll(@this);
+        }
+
+        /// <summary>
+        /// DANGEROUS! Ignores the completion of this task. Also ignores exceptions.
+        /// </summary>
+        /// <param name="this">The task to ignore.</param>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static async void Ignore(this Task @this)
+        {
+            try
+            {
+                await @this.ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        /// <summary>
+        /// DANGEROUS! Ignores the completion and results of this task. Also ignores exceptions.
+        /// </summary>
+        /// <param name="this">The task to ignore.</param>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static async void Ignore<T>(this Task<T> @this)
+        {
+            try
+            {
+                await @this.ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         /// <summary>

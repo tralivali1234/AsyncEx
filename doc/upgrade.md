@@ -36,10 +36,6 @@ The obsolete `CompleteAddingAsync` has also been removed; use `CompleteAdding` i
 
 The semantics for `AsyncCountdownEvent` have been modified; its count can now be negative, and the event is only signalled when the count is `0`. Integer overflow or underflow now always cause exceptions, so the `TryAddCount` and `TrySignal` methods have been removed.
 
-### AsyncCollection
-
-`AsyncCollection<T>` has been removed. If your collection was used as a queue, then use `AsyncProducerConsumerQueue<T>` or `BufferBlock<T>` from [`System.Threading.Tasks.Dataflow`](https://www.nuget.org/packages/System.Threading.Tasks.Dataflow) instead. Otherwise, you'll need to write your own collection wrapper, using `AsyncLock` and `AsyncConditionVariable` appropriately.
-
 ### AsyncBarrier
 
 `AsyncBarrier` has been removed. Replace uses of `AsyncBarrier` with appropriate explicit synchronization primitives (e.g., `AsyncManualResetEvent`).
@@ -65,8 +61,6 @@ The non-generic `TaskCompletionSource` has been removed. Use `TaskCompletionSour
 The `WithBackgroundContinuations` extension methods for `TaskCompletionSource<T>` have been removed (`TrySetCanceledWithBackgroundContinuations`, `TrySetExceptionWithBackgroundContinuations`, `TrySetResultWithBackgroundContinuations`); instead, use the `TaskCompletionSourceExtensions.CreateAsyncTaskSource` to create a TCS that always uses asynchronous continuations.
 
 `TaskCompletionSource<T>.TryCompleteFromEventArgs` has been temporarily removed; it will be added back in a future version as part of `Nito.AsyncEx.Interop.Eap`.
-
-`OrderByCompletion` has been removed. It is better to introduce a higher-level `async` method rather than to "process tasks" as they complete.
 
 All other `Task`/`Task<T>`, `TaskFactory`, and `TaskCompletionSource<T>` extensions have not changed.
 
@@ -94,7 +88,7 @@ The nested type `CancellationTokenExtensions.CancellationTokenTaskSource` is now
 
 The obsolete `CancellationToken.AsTask` extension method has been removed; use `CancellationTokenTaskSource<T>` instead.
 
-The `CancellationToken.ToCancellationTokenTaskSource` extension method has been removed; use the new `Task` extensions (`WaitAsync`, `WhenAnyAsync`, `WhenAllAsync`) or the `CancellationTokenTaskSource<T>` constructor instead.
+The `CancellationToken.ToCancellationTokenTaskSource` extension method has been removed; use the new `Task` extensions (`WaitAsync`, `WhenAny`, `WhenAll`) or the `CancellationTokenTaskSource<T>` constructor instead.
 
 `CancellationTokenHelpers` has been split up. `Timeout` and `Normalize` have moved to `NormalizedCancellationToken`. `CancellationTokenHelpers.None` should change to `CancellationToken.None`, and `CancellationTokenHelpers.Canceled` should change to `new CancellationToken(true)`. `CancellationTokenHelpers.FromTask` has been removed and has no replacement; let me know if you want this functionality.
 
